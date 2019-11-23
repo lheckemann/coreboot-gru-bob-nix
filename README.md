@@ -12,8 +12,9 @@ files. The most important one is `coreboot.rom`.
 
 ## Flashing
 
-I've been flashing this using a SuzyQable. For my user to do this, I
-need permissions to access a couple of things:
+I've been flashing this using a SuzyQable. Initial setup for this was nontrivial, see [write-protection.md](write-protection.md).
+
+For my user to do this, I need permissions to access a couple of things:
 
 - Relevant USB device nodes in `/dev/bus/usb/001/038` or similar (see lsusb)
 - USB tty device nodes (`/dev/ttyUSB[567]` in my case)
