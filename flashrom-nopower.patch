@@ -1,0 +1,24 @@
+diff --git a/cli_classic.c b/cli_classic.c
+index 5d920bf6..49931e9e 100644
+--- a/cli_classic.c
++++ b/cli_classic.c
+@@ -708,8 +708,6 @@ int main(int argc, char *argv[])
+ 	 * to sleep or do other things that can interfere.
+ 	 *
+ 	 */
+-	if (write_it || erase_it)
+-		disable_power_management();
+ 
+ 	/* FIXME: Delay calibration should happen in programmer code. */
+ 	myusec_calibrate_delay();
+@@ -1043,10 +1041,6 @@ out_shutdown:
+ 	if (!set_ignore_lock)
+ 		release_big_lock();
+ #endif
+-	if (restore_power_management()) {
+-		msg_gerr("Unable to re-enable power management\n");
+-		ret |= 1;
+-	}
+ 
+ 	layout_cleanup();
+ #ifndef STANDALONE
