@@ -14,6 +14,29 @@ self = rec {
   image-lzma = pkgs.runCommandNoCC "${linux.name}.lzma" { nativeBuildInputs = [pkgs.lzma]; } ''
     lzma <${linux}/Image >$out
   '';
+  automount-usb = pkgs.writeScript "automount-usb" ''
+    #!${pkgsTarget.busybox}/bin/ash
+    do_mount() {
+      mount /dev/sda1 /mnt
+      for fs in proc sys dev ; do
+        mount --bind /$fs /mnt/$fs
+      done
+      exit
+    }
+    mkdir /mnt
+    for try in $(seq 10) ; do
+      if [[ -e /dev/sda1 ]] ; then
+        do_mount
+      fi
+      sleep 1
+    done
+    while true; do
+      if [[ -e /dev/sda1 ]] ; then
+        do_mount
+      fi
+      sleep 10
+    done
+  '';
   init = pkgs.writeScript "init" ''
     #!${pkgsTarget.busybox}/bin/ash
     export PATH=${pkgsTarget.busybox}/bin:${pkgsTarget.kexectools}/bin
@@ -21,6 +44,7 @@ self = rec {
     mount -t devtmpfs devtmpfs /dev
     mount -t sysfs sysfs /sys
     mount -t proc proc /proc
+    ${automount-usb} &
     </dev/tty0 >/dev/tty0 2>/dev/tty0 ash &
     exec ${pkgsTarget.busybox}/bin/ash
   '';
