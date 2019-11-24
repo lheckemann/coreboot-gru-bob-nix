@@ -70,13 +70,10 @@ in stdenv.mkDerivation {
     grep -v -e 'CONFIG_PAYLOAD_FILE'  ${./coreboot.config} > .config
     cat >>.config <<EOF
     CONFIG_PAYLOAD_FILE=${uImage}
-    #CONFIG_ARM64_BL31_EXTERNAL_FILE=${arm64.armTrustedFirmwareRK3399}/bl31.elf
     EOF
     rm -r 3rdparty/arm-trusted-firmware
     cp -r ${atfSource}/ 3rdparty/arm-trusted-firmware
     chmod -R u+w 3rdparty/arm-trusted-firmware
-
-    #makeFlagsArray+=("BL31_MAKEARGS+= CROSS_COMPILE=${arm64.stdenv.cc.targetPrefix} PLAT=rk3399")
 
     runHook postConfigure
   '';
