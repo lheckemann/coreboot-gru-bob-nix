@@ -19,6 +19,7 @@ let
     name = "coreboot-crossenv";
     paths = crossTools arm64 ++ crossTools arm32 ++ [ pkgsCross.arm-embedded.stdenv.cc ];
     pathsToLink = ["/bin"];
+    ignoreCollisions = true;
   };
   tool_gcc = tool: set: "${set.stdenv.cc}/bin/${set.stdenv.cc.targetPrefix}${tool}";
   tool_binutils = tool: set: "${set.buildPackages.binutils-unwrapped}/bin/${set.stdenv.cc.targetPrefix}${tool}";
