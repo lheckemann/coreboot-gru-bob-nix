@@ -16,8 +16,24 @@ self = rec {
   '';
   autoboot = pkgs.writeScript "autoboot" ''
     #!${pkgsTarget.busybox}/bin/ash
+    export PATH=${resolvelink}/bin:$PATH
     ${pkgsTarget.busybox}/bin/ash ${./autoboot.sh}
   '';
+  resolvelink = resolvelink-cxx;
+  resolvelink-cxx = pkgsTarget.pkgsStatic.stdenv.mkDerivation {
+    name = "resolvelink";
+    buildInputs = [ pkgsTarget.pkgsStatic.boost ];
+    dontUnpack = true;
+    dontInstall = true;
+    buildPhase = ''
+      mkdir -p $out/bin
+      cp ${./resolvelink.cpp} resolvelink.cpp
+      $CXX resolvelink.cpp -o $out/bin/resolvelink -lboost_filesystem -Os -g0
+    '';
+    postFixup = ''
+      rm $out/nix-support/propagated-build-inputs
+    '';
+  };
   init = pkgs.writeScript "init" ''
     #!${pkgsTarget.busybox}/bin/ash
     export PATH=${pkgsTarget.busybox}/bin:${pkgsTarget.kexectools}/bin
