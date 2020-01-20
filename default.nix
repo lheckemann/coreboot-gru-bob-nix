@@ -34,6 +34,12 @@ self = rec {
       rm $out/nix-support/propagated-build-inputs
     '';
   };
+  resolvelink-rs = pkgsTarget.callPackage ({rustPlatform}: rustPlatform.buildRustPackage {
+    pname = "resolvelink";
+    version = "0.1.0";
+    src = ./resolvelink;
+    cargoVendorDir = "";
+  }) {};
   init = pkgs.writeScript "init" ''
     #!${pkgsTarget.busybox}/bin/ash
     export PATH=${pkgsTarget.busybox}/bin:${pkgsTarget.kexectools}/bin
