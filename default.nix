@@ -7,7 +7,10 @@ self = rec {
     inherit (pkgsTarget) stdenv;
     inherit (pkgs.linux_latest) src version;
     configfile = ./linux-config;
-    kernelPatches = [];
+    kernelPatches = [
+      { patch = ./dts-no-hs400.patch; }
+      { patch = ./dts-wifi-fix.patch; }
+    ];
     #autoModules = false;
     #kernelTarget = "Image";
   };
