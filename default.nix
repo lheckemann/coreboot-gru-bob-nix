@@ -15,15 +15,13 @@ self = rec {
     enableParallelBuilding = true;
   };
   flashrom = pkgs.flashrom.overrideAttrs ({makeFlags ? [], buildInputs ? [], ...}: {
-    name = "flashrom-cros";
-    buildInputs = buildInputs ++ [ pkgs.libusb1 ];
+    name = "flashrom-ccd";
     src = pkgs.fetchgit {
-      url = "https://chromium.googlesource.com/chromiumos/third_party/flashrom";
-      rev = "fadf15bb7cb80c852589ca0916a9063c92b1e178";
-      sha256 = "1xgyslv8q100simm7pzzqrizfdry02ypq9hxa5vdp2d27yxw827n";
+      url = "https://review.coreboot.org/flashrom.git";
+      rev = "c7e9a6e15153684672bbadd1fc6baed8247ba0f6";
+      sha256 = "09njximl6rdjnpx6d3asvb587q6x3jqbf8107cfygy1b7c051ryd";
     };
-    makeFlags = makeFlags ++ ["CONFIG_RAIDEN_DEBUG_SPI=yes"];
-    patches = [ ./flashrom-overflow.patch ./flashrom-nopower.patch ./flashrom-nofirmwarelock.patch ];
+    buildInputs = buildInputs ++ [ pkgs.libusb1 ];
   });
   all = pkgs.runCommandNoCC "indigo" {} ''
     mkdir -p $out

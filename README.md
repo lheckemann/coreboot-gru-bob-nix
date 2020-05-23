@@ -21,7 +21,7 @@ For my user to do this, I need permissions to access a couple of things:
 
 Then I can flash (the Chromebook needs to be on at the beginning and will be forcibly turned off!):
 ```
-./result/flashrom -p raiden_debug_spi:target=AP -r backups/ap-$(date -Iminutes)
-./result/flashrom -p raiden_debug_spi:target=AP -w ./result/coreboot.rom
+./result/flashrom -p raiden_debug:target=AP -r backups/ap-$(date -Iminutes)
+./result/flashrom -p raiden_debug:target=AP -w ./result/coreboot.rom
 ```
 This takes quite a long time (usually ~10 minutes to write and verify for me).
