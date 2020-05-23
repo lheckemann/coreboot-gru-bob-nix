@@ -2,6 +2,7 @@
 , lib
 , iasl
 , buildEnv
+, pkgconfig
 , pkgsCross
 , python2
 , rsync
@@ -44,14 +45,14 @@ let
     sha256 = "0b9khw4i4y8vrflrh0v7npvjz18arxa7cswvyvapa0v37b7kp716";
   };
 in stdenv.mkDerivation {
-  name = "coreboot-4.11-${u-boot.name}";
+  name = "coreboot-4.11-${u-boot.pname}";
   src = fetchgit {
     url = "https://review.coreboot.org/coreboot.git";
     rev = "d1e44b033ea48bc4ac3303ff8459544bc4abc040"; # master 2020-05-23
     sha256 = "1yq179bcf6srkbz1zyfq2y99x4y9jc0sv5jr87hrdkc5nsyaz4xw";
     fetchSubmodules = false;
   };
-  nativeBuildInputs = [ m4 bison flex bc iasl rsync python2 ];
+  nativeBuildInputs = [ m4 bison flex bc iasl rsync python2 pkgconfig ];
   buildInputs = [ zlib ];
   makeFlags = makeVars "arm" arm32 ++ makeVars "arm64" arm64 ++ [
     "CROSS_COMPILE_arm64=${arm64.stdenv.cc.targetPrefix}"
@@ -88,7 +89,7 @@ in stdenv.mkDerivation {
   enableParallelBuilding = true;
   installPhase = ''
     ./build/cbfstool build/coreboot.rom remove -n fallback/payload
-    ./build/cbfstool build/coreboot.rom add-flat-binary -f ${u-boot}/u-boot-dtb.bin -n fallback/payload -l 0x00a00000 -e 0x00a0000
+    ./build/cbfstool build/coreboot.rom add-flat-binary -f ${u-boot}/u-boot-dtb.bin -n fallback/payload -l 0x00a00000 -e 0x00a00000
     mkdir $out
     cp build/coreboot.rom $out
   '';

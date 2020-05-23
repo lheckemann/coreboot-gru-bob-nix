@@ -5,6 +5,7 @@ callPackage = pkgs.newScope (pkgs // self);
 self = rec {
   coreboot = callPackage ./coreboot.nix {};
   u-boot = pkgsTarget.buildUBoot {
+    name = "u-boot-chromebook_bob";
     defconfig = "chromebook_bob_defconfig";
     filesToInstall = ["u-boot-dtb.bin"];
     postConfigure = ''
