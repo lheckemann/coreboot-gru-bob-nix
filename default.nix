@@ -1,4 +1,5 @@
-{ pkgs ? import <nixpkgs> {}
+{ pkgsPath ? builtins.fetchTarball (builtins.fromJSON (builtins.readFile ./nixpkgs.json))
+, pkgs ? import pkgsPath {}
 , pkgsTarget ? pkgs.pkgsCross.aarch64-multiplatform-musl
 }: let
 callPackage = pkgs.newScope (pkgs // self);
