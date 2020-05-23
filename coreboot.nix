@@ -44,11 +44,11 @@ let
     sha256 = "1nlnrmhvqjhwdmlihcjf7dwjsk5qmij8svsgw64ayl9j61jq07ay";
   };
 in stdenv.mkDerivation {
-  name = "coreboot-${uImage.name}";
+  name = "coreboot-4.11-${uImage.name}";
   src = fetchgit {
     url = "https://review.coreboot.org/coreboot.git";
-    rev = "0e6e45770293781a19bd92d440bc6da6da642f7f";
-    sha256 = "1fypgwp8hgn1jl6li40f4rf27h8ia2xdaqpn9hhfhyyca16nvkj7";
+    rev = "ab8edda14a622ab46bdfd01b877d75c7bd385a4d"; # 4.11
+    sha256 = "0pa61240d42mvbypm7ngxc1b0j4jdbay6pxk783ci9yh5mm05wml";
     fetchSubmodules = false;
   };
   nativeBuildInputs = [ m4 bison flex bc iasl rsync python2 ];
@@ -68,7 +68,7 @@ in stdenv.mkDerivation {
     export PATH="${crossEnv}/bin:$PATH"
     export ARCH=aarch64
     export CPUS=$NIX_BUILD_CORES
-    grep -v -e 'CONFIG_PAYLOAD_FILE'  ${./coreboot.config} > .config
+    grep -v -e 'CONFIG_PAYLOAD_FILE' ${./coreboot.config} > .config
     cat >>.config <<EOF
     CONFIG_PAYLOAD_FILE=${uImage}
     EOF
