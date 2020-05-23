@@ -76,6 +76,9 @@ in stdenv.mkDerivation {
     cp -r ${atfSource}/ 3rdparty/arm-trusted-firmware
     chmod -R u+w 3rdparty/arm-trusted-firmware
 
+    #export NIX_aarch64_unknown_linux_gnu_CFLAGS_COMPILE=-Wno-error=address-of-packed-member
+    export NIX_CFLAGS_COMPILE=-Wno-error=redundant-decls
+
     runHook postConfigure
   '';
   enableParallelBuilding = true;
