@@ -40,6 +40,12 @@ self = rec {
     src = ./resolvelink;
     cargoVendorDir = "";
   }) {};
+  resolvelink-rs = pkgsTarget.callPackage ({runCommandCC, rustc}: runCommandCC "resolvelink" {
+    nativeBuildInputs = [ rustc ];
+  } ''
+    mkdir -p $out/bin
+    rustc ${./resolvelink.rs} -o $out/bin/resolvelink
+  '') {};
   init = pkgs.writeScript "init" ''
     #!${pkgsTarget.busybox}/bin/ash
     export PATH=${pkgsTarget.busybox}/bin:${pkgsTarget.kexectools}/bin
