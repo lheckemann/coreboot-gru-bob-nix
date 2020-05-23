@@ -5,7 +5,7 @@
 , pkgsCross
 , python2
 , rsync
-, uImage }:
+, u-boot }:
 let
   crossTools = set: [
     set.stdenv.cc
@@ -40,21 +40,20 @@ let
   };
   vbootSource = fetchgit {
     url = "https://review.coreboot.org/vboot.git";
-    rev = "b2c8984d37e378b2faad170d4ec9b378c0c2b145";
-    sha256 = "1nlnrmhvqjhwdmlihcjf7dwjsk5qmij8svsgw64ayl9j61jq07ay";
+    rev = "3aab301473ec0b95f109a245efeadc20c3b7d57d";
+    sha256 = "0b9khw4i4y8vrflrh0v7npvjz18arxa7cswvyvapa0v37b7kp716";
   };
 in stdenv.mkDerivation {
-  name = "coreboot-4.11-${uImage.name}";
+  name = "coreboot-4.11-${u-boot.name}";
   src = fetchgit {
     url = "https://review.coreboot.org/coreboot.git";
-    rev = "ab8edda14a622ab46bdfd01b877d75c7bd385a4d"; # 4.11
-    sha256 = "0pa61240d42mvbypm7ngxc1b0j4jdbay6pxk783ci9yh5mm05wml";
+    rev = "d1e44b033ea48bc4ac3303ff8459544bc4abc040"; # master 2020-05-23
+    sha256 = "1yq179bcf6srkbz1zyfq2y99x4y9jc0sv5jr87hrdkc5nsyaz4xw";
     fetchSubmodules = false;
   };
   nativeBuildInputs = [ m4 bison flex bc iasl rsync python2 ];
   buildInputs = [ zlib ];
   makeFlags = makeVars "arm" arm32 ++ makeVars "arm64" arm64 ++ [
-    "VBOOT_SOURCE=${vbootSource}"
     "CROSS_COMPILE_arm64=${arm64.stdenv.cc.targetPrefix}"
     "CROSS_COMPILE_arm=${arm32.stdenv.cc.targetPrefix}"
   ];
@@ -70,19 +69,26 @@ in stdenv.mkDerivation {
     export CPUS=$NIX_BUILD_CORES
     grep -v -e 'CONFIG_PAYLOAD_FILE' ${./coreboot.config} > .config
     cat >>.config <<EOF
-    CONFIG_PAYLOAD_FILE=${uImage}
+    CONFIG_PAYLOAD_FILE=${u-boot}/u-boot-dtb.bin
     EOF
     rm -r 3rdparty/arm-trusted-firmware
     cp -r ${atfSource}/ 3rdparty/arm-trusted-firmware
     chmod -R u+w 3rdparty/arm-trusted-firmware
 
-    #export NIX_aarch64_unknown_linux_gnu_CFLAGS_COMPILE=-Wno-error=address-of-packed-member
-    export NIX_CFLAGS_COMPILE=-Wno-error=redundant-decls
+    rm -r 3rdparty/vboot
+    cp -r ${vbootSource} 3rdparty/vboot
+    chmod -R u+w 3rdparty/vboot
+    sed -i 's/-Wno-unknown-warning//' 3rdparty/vboot/Makefile
+
+    export NIX_aarch64_unknown_linux_gnu_CFLAGS_COMPILE=-Wno-error=address-of-packed-member\ -Wno-error=format-truncation
+    export NIX_CFLAGS_COMPILE=-Wno-error=format-truncation
 
     runHook postConfigure
   '';
   enableParallelBuilding = true;
   installPhase = ''
+    ./build/cbfstool build/coreboot.rom remove -n fallback/payload
+    ./build/cbfstool build/coreboot.rom add-flat-binary -f ${u-boot}/u-boot-dtb.bin -n fallback/payload -l 0x00a00000 -e 0x00a0000
     mkdir $out
     cp build/coreboot.rom $out
   '';

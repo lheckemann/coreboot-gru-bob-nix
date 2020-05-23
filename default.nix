@@ -3,80 +3,15 @@
 }: let
 callPackage = pkgs.newScope (pkgs // self);
 self = rec {
-  linux = pkgsTarget.linuxManualConfig {
-    inherit (pkgsTarget) stdenv;
-    inherit (pkgs.linux_latest) src version;
-    configfile = ./linux-config;
-    kernelPatches = [
-      { patch = ./dts-no-hs400.patch; }
-      { patch = ./dts-wifi-fix.patch; }
-    ];
-    #autoModules = false;
-    #kernelTarget = "Image";
-  };
-  image-lzma = pkgs.runCommandNoCC "${linux.name}.lzma" { nativeBuildInputs = [pkgs.lzma]; } ''
-    lzma <${linux}/Image >$out
-  '';
-  autoboot = pkgs.writeScript "autoboot" ''
-    #!${pkgsTarget.busybox}/bin/ash
-    export PATH=${resolvelink}/bin:$PATH
-    ${pkgsTarget.busybox}/bin/ash ${./autoboot.sh}
-  '';
-  resolvelink = resolvelink-cxx;
-  resolvelink-cxx = pkgsTarget.pkgsStatic.stdenv.mkDerivation {
-    name = "resolvelink";
-    buildInputs = [ pkgsTarget.pkgsStatic.boost ];
-    dontUnpack = true;
-    dontInstall = true;
-    buildPhase = ''
-      mkdir -p $out/bin
-      cp ${./resolvelink.cpp} resolvelink.cpp
-      $CXX resolvelink.cpp -o $out/bin/resolvelink -lboost_filesystem -lboost_system -Os -g0
-    '';
-    postFixup = ''
-      rm $out/nix-support/propagated-build-inputs
-    '';
-  };
-  resolvelink-rs = pkgsTarget.callPackage ({rustPlatform}: rustPlatform.buildRustPackage {
-    pname = "resolvelink";
-    version = "0.1.0";
-    src = ./resolvelink;
-    cargoVendorDir = "";
-  }) {};
-  resolvelink-rs = pkgsTarget.callPackage ({runCommandCC, rustc}: runCommandCC "resolvelink" {
-    nativeBuildInputs = [ rustc ];
-  } ''
-    mkdir -p $out/bin
-    rustc ${./resolvelink.rs} -o $out/bin/resolvelink
-  '') {};
-  init = pkgs.writeScript "init" ''
-    #!${pkgsTarget.busybox}/bin/ash
-    export PATH=${pkgsTarget.busybox}/bin:${pkgsTarget.kexectools}/bin
-    mkdir -p /dev /sys /proc
-    mount -t devtmpfs devtmpfs /dev
-    mount -t sysfs sysfs /sys
-    mount -t proc proc /proc
-    ${autoboot} &
-    exec ${pkgsTarget.busybox}/bin/ash
-  '';
-  initramfs = pkgs.makeInitrd {
-    contents = [
-      { object = init; symlink = "/init"; }
-    ];
-    compressor = "${pkgs.xz}/bin/xz --check=crc32";
-  };
-  ubootTools = pkgs.ubootTools.overrideAttrs (o: {
-    preBuild = ''
-      mv .config .config-pre
-      cat - <(grep -vEe 'FIT(=| is not)' -e 'SYS_TEXT_BASE' .config-pre) >.config <<EOF
-      CONFIG_FIT=y
-      CONFIG_SYS_TEXT_BASE=0x0
-      EOF
-      make oldconfig
-    '';
-  });
-  uImage = callPackage ./uimage.nix {};
   coreboot = callPackage ./coreboot.nix {};
+  u-boot = pkgsTarget.buildUBoot {
+    defconfig = "chromebook_bob_defconfig";
+    filesToInstall = ["u-boot-dtb.bin"];
+    postConfigure = ''
+      sed -i 's/CONFIG_SYS_TEXT_BASE=.*/CONFIG_SYS_TEXT_BASE=0x00a00000/' .config
+    '';
+    enableParallelBuilding = true;
+  };
   flashrom = pkgs.flashrom.overrideAttrs ({makeFlags ? [], buildInputs ? [], ...}: {
     name = "flashrom-cros";
     buildInputs = buildInputs ++ [ pkgs.libusb1 ];
@@ -90,13 +25,7 @@ self = rec {
   });
   all = pkgs.runCommandNoCC "indigo" {} ''
     mkdir -p $out
-    cp ${init} $out/init
-    cp -r ${linux} $out/linux
-    cp -r ${image-lzma} $out/Image.lzma
-    cp -r ${initramfs}/initrd $out/initramfs.cpio.xz
-    cp -r ${uImage} $out/uImage
     cp ${coreboot}/coreboot.rom $out/
-    cp ${linux}/dtbs/rockchip/rk3399-gru-bob.dtb $out
     cp ${flashrom}/bin/flashrom $out/
   '';
 };
