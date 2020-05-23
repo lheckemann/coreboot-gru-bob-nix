@@ -28,7 +28,7 @@ self = rec {
     buildPhase = ''
       mkdir -p $out/bin
       cp ${./resolvelink.cpp} resolvelink.cpp
-      $CXX resolvelink.cpp -o $out/bin/resolvelink -lboost_filesystem -Os -g0
+      $CXX resolvelink.cpp -o $out/bin/resolvelink -lboost_filesystem -lboost_system -Os -g0
     '';
     postFixup = ''
       rm $out/nix-support/propagated-build-inputs
