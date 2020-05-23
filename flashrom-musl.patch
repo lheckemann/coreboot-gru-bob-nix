@@ -1,0 +1,26 @@
+diff --git a/fmap.h b/fmap.h
+index 93405d41..8cef4432 100644
+--- a/fmap.h
++++ b/fmap.h
+@@ -38,7 +38,9 @@
+ #ifndef __FMAP_H__
+ #define __FMAP_H__ 1
+ 
++#define _GNU_SOURCE
+ #include <inttypes.h>
++#include <fcntl.h>
+ 
+ struct flashctx;
+ 
+diff --git a/spi.c b/spi.c
+index 04a1937f..ffb44171 100644
+--- a/spi.c
++++ b/spi.c
+@@ -19,6 +19,7 @@
+  * Contains the generic SPI framework
+  */
+ 
++#define _XOPEN_SOURCE 700
+ #include <strings.h>
+ #include <string.h>
+ #include "flash.h"

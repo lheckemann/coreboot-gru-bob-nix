@@ -68,14 +68,16 @@ self = rec {
   });
   uImage = callPackage ./uimage.nix {};
   coreboot = callPackage ./coreboot.nix {};
-  flashrom = pkgs.flashrom.overrideAttrs (o: {
+  flashrom = pkgs.flashrom.overrideAttrs ({makeFlags ? [], buildInputs ? [], ...}: {
+    name = "flashrom-cros";
+    buildInputs = buildInputs ++ [ pkgs.libusb1 ];
     src = pkgs.fetchgit {
       url = "https://chromium.googlesource.com/chromiumos/third_party/flashrom";
       rev = "fadf15bb7cb80c852589ca0916a9063c92b1e178";
       sha256 = "1xgyslv8q100simm7pzzqrizfdry02ypq9hxa5vdp2d27yxw827n";
     };
-    makeFlags = (o.makeFlags or []) ++ ["CONFIG_RAIDEN_DEBUG_SPI=yes"];
-    patches = [ ./flashrom-overflow.patch ./flashrom-nopower.patch ];
+    makeFlags = makeFlags ++ ["CONFIG_RAIDEN_DEBUG_SPI=yes"];
+    patches = [ ./flashrom-overflow.patch ./flashrom-nopower.patch ./flashrom-nofirmwarelock.patch ];
   });
   all = pkgs.runCommandNoCC "indigo" {} ''
     mkdir -p $out
