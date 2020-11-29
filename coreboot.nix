@@ -4,7 +4,7 @@
 , buildEnv
 , pkgconfig
 , pkgsCross
-, python2
+, python3
 , rsync
 , u-boot }:
 let
@@ -36,23 +36,23 @@ let
 
   atfSource = fetchgit {
     url = "https://review.coreboot.org/arm-trusted-firmware.git";
-    rev = "ace23683beb81354d6edbc61c087ab8c384d0631";
-    sha256 = "01q12p7jfwiv6mxfq36qwrckfb2l3v8c0nqpv8wpca47lbmvnfjx";
+    rev = "v2.5";
+    sha256 = "0w3blkqgmyb5bahlp04hmh8abrflbzy0qg83kmj1x9nv4mw66f3b";
   };
   vbootSource = fetchgit {
     url = "https://review.coreboot.org/vboot.git";
-    rev = "3aab301473ec0b95f109a245efeadc20c3b7d57d";
-    sha256 = "0b9khw4i4y8vrflrh0v7npvjz18arxa7cswvyvapa0v37b7kp716";
+    rev = "4e982f1c39da417100e4021fb1c2c370da5f8dd6"; # master 2021-06-15
+    sha256 = "1fr35gh4c81gb75q6zpf4v9hnvk74ppzdww54fhrr28ahzd73qi6";
   };
 in stdenv.mkDerivation {
   name = "coreboot-4.11-${u-boot.pname}";
   src = fetchgit {
     url = "https://review.coreboot.org/coreboot.git";
-    rev = "d1e44b033ea48bc4ac3303ff8459544bc4abc040"; # master 2020-05-23
-    sha256 = "1yq179bcf6srkbz1zyfq2y99x4y9jc0sv5jr87hrdkc5nsyaz4xw";
+    rev = "4.14";
+    sha256 = "06y46bjzkmps84dk5l2ywjcxmsxmqak5cr7sf18s5zv1pm566pqa";
     fetchSubmodules = false;
   };
-  nativeBuildInputs = [ m4 bison flex bc iasl rsync python2 pkgconfig ];
+  nativeBuildInputs = [ m4 bison flex bc iasl rsync python3 pkgconfig ];
   buildInputs = [ zlib ];
   makeFlags = makeVars "arm" arm32 ++ makeVars "arm64" arm64 ++ [
     "CROSS_COMPILE_arm64=${arm64.stdenv.cc.targetPrefix}"
@@ -61,6 +61,7 @@ in stdenv.mkDerivation {
   postPatch = ''
     patchShebangs util/xcompile
     patchShebangs util/rockchip/make_idb.py
+    patchShebangs util/genbuild_h/genbuild_h.sh
   '';
   configurePhase = ''
     runHook preConfigure
@@ -81,7 +82,7 @@ in stdenv.mkDerivation {
     chmod -R u+w 3rdparty/vboot
     sed -i 's/-Wno-unknown-warning//' 3rdparty/vboot/Makefile
 
-    export NIX_aarch64_unknown_linux_gnu_CFLAGS_COMPILE=-Wno-error=address-of-packed-member\ -Wno-error=format-truncation
+    export NIX_CFLAGS_COMPILE_aarch64_unknown_linux_gnu=-Wno-error=address-of-packed-member\ -Wno-error=format-truncation\ -Wno-error=int-conversion
     export NIX_CFLAGS_COMPILE=-Wno-error=format-truncation
 
     runHook postConfigure

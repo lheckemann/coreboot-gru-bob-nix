@@ -1,4 +1,5 @@
 {
-  "url": "https://releases.nixos.org/nixos/20.03/nixos-20.03.1950.48723f48ab9/nixexprs.tar.xz",
-  "sha256": "1qhjvig1a0h1025wmf490y4brvzxqim5jkjvvv5kdnmhc2mczljz"
+  "url": "https://releases.nixos.org/nixos/21.05/nixos-21.05.961.1f91fd10406/nixexprs.tar.xz",
+  "sha256": "0c8lgpnh8zfd0a4qgd7x1kxvrfn7kv0wp4bdi0iakyvkl7j62314",
+  "name": "nixos-21.05.961.1f91fd10406"
 }
